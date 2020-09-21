@@ -1,0 +1,9 @@
+dlib
+numpy
+opencv-python
+imutils
+mxnet
+insightface
+cmake
+git+https://github.com/letmaik/pyvirtualcam
+
