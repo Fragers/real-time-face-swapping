@@ -1,4 +1,4 @@
-![Screenshot](examples/example.jpg)
+![Screenshot](изображение.png)
 # Real time face swapping
  delaunay triangulation
 # script in the test.py
