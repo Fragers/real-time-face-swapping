@@ -42,7 +42,6 @@ def applyAffineTransform(src, srcTri, dstTri, size):
     # Apply the Affine Transform just found to the src image
     dst = cv2.warpAffine(src, warpMat, (size[0], size[1]), None, flags=cv2.INTER_LINEAR,
                          borderMode=cv2.BORDER_REFLECT_101)
-    
 
     return dst
 
@@ -61,7 +60,7 @@ def rectContains(rect, point):
 
 
 # calculate delanauy triangle
-def calculateDelaunayTriangles(rect, points):
+def calculateDelaunayTriangles(rect, points, points_dict):
     # create subdiv
     subdiv = cv2.Subdiv2D(rect)
 
@@ -69,13 +68,13 @@ def calculateDelaunayTriangles(rect, points):
     for p in points:
         subdiv.insert(p)
 
-    triangleList = subdiv.getTriangleList();
+    triangleList = subdiv.getTriangleList()
 
     delaunayTri = []
 
     pt = []
 
-    for t in triangleList:
+    for index, t in enumerate(triangleList):
         pt.append((t[0], t[1]))
         pt.append((t[2], t[3]))
         pt.append((t[4], t[5]))
@@ -86,12 +85,24 @@ def calculateDelaunayTriangles(rect, points):
 
         if rectContains(rect, pt1) and rectContains(rect, pt2) and rectContains(rect, pt3):
             ind = []
+            # ind.append(pt1)
+            # ind.append(pt2)
+            # ind.append(pt3)
+
             # Get face-points (from 68 face detector) by coordinates
-            for j in range(0, 3):
-                for k in range(0, len(points)):
-                    if (abs(pt[j][0] - points[k][0]) < 1.0 and abs(pt[j][1] - points[k][1]) < 1.0):
-                        ind.append(k)
-                        # Three points form a triangle. Triangle array corresponds to the file tri.txt in FaceMorph
+            # for j in range(0, 3):
+            #     for k in range(0, len(points)):
+            #         if (abs(pt[j][0] - points[k][0]) < 1.0 and abs(pt[j][1] - points[k][1]) < 1.0):
+            #             ind.append(k)
+            #             break
+            ind.append(points_dict[pt1])
+            ind.append(points_dict[pt2])
+            ind.append(points_dict[pt3])
+
+            # ind.append(index * 3)
+            # ind.append(index * 3 + 1)
+            # ind.append(index * 3 + 2)
+            # Three points form a triangle. Triangle array corresponds to the file tri.txt in FaceMorph
             if len(ind) == 3:
                 delaunayTri.append((ind[0], ind[1], ind[2]))
 
@@ -150,7 +161,7 @@ if __name__ == '__main__':
     #     sys.exit(1)
 
     # Read images
-    filename1 = 'images/di.png'
+    filename1 = 'images/ava.png'
     prev_frame = None
     img1 = cv2.imread(filename1)
     preds_source = handler.get(img1, get_all=False)
@@ -166,8 +177,8 @@ if __name__ == '__main__':
     with pyvirtualcam.Camera(width=640, height=480, fps=30, print_fps=True) as cam:
         while True:
             _, img2 = cap.read()
-            img1Warped = np.copy(img2)
-
+            # img1Warped = np.copy(img2)
+            img1Warped = np.zeros_like(img2)
             img_copy = img2.copy()
             # Read array of corresponding points
             # points1 = readPoints(filename1 + '.txt')
@@ -184,14 +195,15 @@ if __name__ == '__main__':
                 for i in range(pred.shape[0]):
                     p = tuple(pred[i])
                     cv2.circle(img_copy, tuple(pred[i]), radius=1, color=color)
-                    #print(pred[i])
+                    # print(pred[i])
                     points2.append(p)
             # Find convex hull
             hull1 = []
             hull2 = []
             try:
-                hullIndex = cv2.convexHull(np.array(points2), returnPoints=False)
-                # hull ind
+                # hullIndex = cv2.convexHull(np.array(points2), returnPoints=False)
+                hullIndex = [i for i in range(len(points2))]
+
             except:
                 if prev_frame is not None:
                     cv2.imshow('video', output)
@@ -203,12 +215,18 @@ if __name__ == '__main__':
             for i in range(0, len(hullIndex)):
                 hull1.append(points1[int(hullIndex[i])])
                 hull2.append(points2[int(hullIndex[i])])
-            # print(len(hullIndex))
+            #print(len(hullIndex))
+            if len(hullIndex) == 0:
+                continue
             # Find delanauy traingulation for convex hull points
             sizeImg2 = img2.shape
             rect = (0, 0, sizeImg2[1], sizeImg2[0])
+            points_dict = dict()
+            for index, curPoint in enumerate(points2):
+                # print(curPoint)
+                points_dict[curPoint] = index
 
-            dt = calculateDelaunayTriangles(rect, hull2)
+            dt = calculateDelaunayTriangles(rect, hull2, points_dict)
 
             if len(dt) == 0:
                 quit()
@@ -226,27 +244,30 @@ if __name__ == '__main__':
                 warpTriangle(img1, img1Warped, t1, t2)
 
             # Calculate Mask
-            hull8U = []
-            for i in range(0, len(hull2)):
-                hull8U.append((hull2[i][0], hull2[i][1]))
+            # hull8U = []
+            # for i in range(0, len(hull2)):
+            #     hull8U.append((hull2[i][0], hull2[i][1]))
+            #
+            # mask = np.zeros(img2.shape, dtype=img2.dtype)
+            #
+            # cv2.fillConvexPoly(mask, np.int32(hull8U), (255, 255, 255))
+            #
+            # r = cv2.boundingRect(np.float32([hull2]))
+            #
+            # center = ((r[0] + int(r[2] / 2), r[1] + int(r[3] / 2)))
+            #
+            # # Clone seamlessly.
+            # output = cv2.seamlessClone(np.uint8(img1Warped), img2, mask, center, cv2.NORMAL_CLONE)
+            # tim = cv2.cvtColor(output, cv2.COLOR_BGR2RGBA)
+            cv2.imshow('video', np.uint8(img1Warped))
+            # cv2.imshow('video1', img_copy)
+            output = np.uint8(img1Warped)
 
-            mask = np.zeros(img2.shape, dtype=img2.dtype)
-
-            cv2.fillConvexPoly(mask, np.int32(hull8U), (255, 255, 255))
-
-            r = cv2.boundingRect(np.float32([hull2]))
-
-            center = ((r[0] + int(r[2] / 2), r[1] + int(r[3] / 2)))
-
-            # Clone seamlessly.
-            output = cv2.seamlessClone(np.uint8(img1Warped), img2, mask, center, cv2.NORMAL_CLONE)
-
-            cv2.imshow('video', output)
-            cv2.imshow('video1', img_copy)
             tim = cv2.cvtColor(output, cv2.COLOR_BGR2RGBA)
-            #tim = cv2.cvtColor(output, cv2.COLOR_BGR2RGBA)
 
             prev_frame = True
+
+            # output = tim
             cam.send(tim)
             cv2.waitKey(1)
             cam.sleep_until_next_frame()
