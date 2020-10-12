@@ -5,6 +5,7 @@ from implementation import *
 
 import pyvirtualcam
 import argparse
+import configparser
 import cv2
 import sys
 import os
@@ -12,7 +13,6 @@ import mxnet as mx
 import datetime
 from skimage import transform as trans
 import insightface
-
 import sys
 
 # Read points from text file
@@ -138,6 +138,8 @@ def warpTriangle(img1, img2, t1, t2):
 
 
 if __name__ == '__main__':
+    config = configparser.ConfigParser()  # создаём объекта парсера
+    config.read("settings.ini")  # читаем конфиг
     cap = cv2.VideoCapture(0)
     handler = Handler('./2d106det', 0, ctx_id=-1,
                       det_size=120)  # чем меньше размер картинки тем быстрее инференс, но точность ниже, норм при 120..
@@ -150,7 +152,7 @@ if __name__ == '__main__':
     #     sys.exit(1)
 
     # Read images
-    filename1 = 'images/di.png'
+    filename1 = config["Settings"]["filepath"]
     prev_frame = None
     img1 = cv2.imread(filename1)
     preds_source = handler.get(img1, get_all=False)
