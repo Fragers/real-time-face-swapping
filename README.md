@@ -1,4 +1,6 @@
-![Screenshot](изображение.png)
+![Screenshot](screenshots/1.png)
+![Screenshot](screenshots/2.png)
+
 # Real time face swapping
  delaunay triangulation
 # script in the test.py
