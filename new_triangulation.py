@@ -1,7 +1,6 @@
 # Read points from text file
 from utils.triangulation_implementation import *
 
-
 if __name__ == '__main__':
     cap = cv2.VideoCapture(0)
     handler = Handler('new_model/2d106det', 0, ctx_id=-1,
@@ -10,9 +9,11 @@ if __name__ == '__main__':
     # Make sure OpenCV is version 3.0 or above
     # (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
 
-
     # Read images
-    filename1 = 'images/ava.png'
+    config = configparser.ConfigParser()
+    config.read('settings.ini')
+    filename1 = config["Settings"]["filepath"]
+    print(filename1)
     prev_frame = None
     img1 = cv2.imread(filename1)
     preds_source = handler.get(img1, get_all=False)
@@ -66,7 +67,7 @@ if __name__ == '__main__':
             for i in range(0, len(hullIndex)):
                 hull1.append(points1[int(hullIndex[i])])
                 hull2.append(points2[int(hullIndex[i])])
-            #print(len(hullIndex))
+            # print(len(hullIndex))
             if len(hullIndex) == 0:
                 continue
             # Find delanauy traingulation for convex hull points

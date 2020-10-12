@@ -8,7 +8,7 @@ import mxnet as mx
 import datetime
 from skimage import transform as trans
 import insightface
-
+import configparser
 
 def square_crop(im, S):
     if im.shape[0] > im.shape[1]:
