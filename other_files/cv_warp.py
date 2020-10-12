@@ -1,15 +1,7 @@
-from implementation import *
+from utils.model_implementation import *
 
 import numpy as np
-import pyvirtualcam
-import argparse
 import cv2
-import sys
-import os
-import mxnet as mx
-import datetime
-from skimage import transform as trans
-import insightface
 
 handler = Handler('./2d106det', 0, ctx_id=-1,
                   det_size=120)  # чем меньше размер картинки тем быстрее инференс, но точность ниже, норм при 120..

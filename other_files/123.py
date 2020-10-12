@@ -1,22 +1,10 @@
-import cv2
-import numpy as np
-import random
-from implementation import *
+from utils.model_implementation import *
 
 import pyvirtualcam
-import argparse
 import cv2
-import sys
-import os
-import mxnet as mx
-import datetime
-from skimage import transform as trans
-import insightface
 
-import sys
 
 # Read points from text file
-import sys
 
 
 # Read points from text file
