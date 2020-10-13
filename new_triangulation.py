@@ -2,7 +2,15 @@
 from utils.triangulation_implementation import *
 
 if __name__ == '__main__':
+    config = configparser.ConfigParser()
+    config.read('settings.ini')
+    filename1 = config["Settings"]["filepath"]
+    sizeW = int(config["Settings"]["sizeW"])
+    sizeH = int(config["Settings"]["sizeH"])
     cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_FPS, 24)  # Частота кадров
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, sizeW)  # Ширина кадров в видеопотоке.
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, sizeH)
     handler = Handler('new_model/2d106det', 0, ctx_id=-1,
                       det_size=120)  # чем меньше размер картинки тем быстрее инференс, но точность ниже, норм при 120..
 
@@ -10,14 +18,18 @@ if __name__ == '__main__':
     # (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
 
     # Read images
-    config = configparser.ConfigParser()
-    config.read('settings.ini')
-    filename1 = config["Settings"]["filepath"]
+    # config = configparser.ConfigParser()
+    # config.read('settings.ini')
+    # filename1 = config["Settings"]["filepath"]
+    # sizeW = int(config["Settings"]["sizeW"])
+    # sizeH = int(config["Settings"]["sizeH"])
+
     print(filename1)
     prev_frame = None
     img1 = cv2.imread(filename1)
+    img1 = cv2.resize(img1, (sizeW, sizeH))
     preds_source = handler.get(img1, get_all=False)
-    img1 = cv2.resize(img1, (640, 480))
+
     print(img1.shape)
     points1 = []
     for pred in preds_source:
@@ -26,7 +38,7 @@ if __name__ == '__main__':
             p = tuple(pred[i])
             points1.append(p)
 
-    with pyvirtualcam.Camera(width=640, height=480, fps=30, print_fps=True) as cam:
+    with pyvirtualcam.Camera(width=sizeW, height=sizeH, fps=30, print_fps=True) as cam:
         while True:
             _, img2 = cap.read()
             # img1Warped = np.copy(img2)
@@ -53,7 +65,7 @@ if __name__ == '__main__':
             hull1 = []
             hull2 = []
             try:
-                # hullIndex = cv2.convexHull(np.array(points2), returnPoints=False)
+                convHullIndex = cv2.convexHull(np.array(points2), returnPoints=False)
                 hullIndex = [i for i in range(len(points2))]
 
             except:
@@ -67,6 +79,9 @@ if __name__ == '__main__':
             for i in range(0, len(hullIndex)):
                 hull1.append(points1[int(hullIndex[i])])
                 hull2.append(points2[int(hullIndex[i])])
+            convexHull = []
+            for i in range(0, len(convHullIndex)):
+                convexHull.append(points2[int(convHullIndex[i])])
             # print(len(hullIndex))
             if len(hullIndex) == 0:
                 continue
@@ -98,8 +113,8 @@ if __name__ == '__main__':
 
             # Calculate Mask
             # hull8U = []
-            # for i in range(0, len(hull2)):
-            #     hull8U.append((hull2[i][0], hull2[i][1]))
+            # for i in range(0, len(convexHull)):
+            #     hull8U.append((convexHull[i][0], convexHull[i][1]))
             #
             # mask = np.zeros(img2.shape, dtype=img2.dtype)
             #
@@ -109,14 +124,15 @@ if __name__ == '__main__':
             #
             # center = ((r[0] + int(r[2] / 2), r[1] + int(r[3] / 2)))
             #
-            # # Clone seamlessly.
             # output = cv2.seamlessClone(np.uint8(img1Warped), img2, mask, center, cv2.NORMAL_CLONE)
             # tim = cv2.cvtColor(output, cv2.COLOR_BGR2RGBA)
-            cv2.imshow('video', np.uint8(img1Warped))
-            # cv2.imshow('video1', img_copy)
+            #
+            #
             output = np.uint8(img1Warped)
 
             tim = cv2.cvtColor(output, cv2.COLOR_BGR2RGBA)
+            cv2.imshow('video', output)
+            # cv2.imshow('video1', img_copy)
 
             prev_frame = True
 

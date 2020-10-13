@@ -25,7 +25,7 @@ def applyAffineTransform(src, srcTri, dstTri, size):
     # Apply the Affine Transform just found to the src image
     dst = cv2.warpAffine(src, warpMat, (size[0], size[1]), None, flags=cv2.INTER_LINEAR,
                          borderMode=cv2.BORDER_REFLECT_101)
-
+    # dst = cv2.warpAffine(src, warpMat, (size[0], size[1]), None, flags=None, borderMode=None)
     return dst
 
 
@@ -99,7 +99,6 @@ def warpTriangle(img1, img2, t1, t2):
     # Find bounding rectangle for each triangle
     r1 = cv2.boundingRect(np.float32([t1]))
     r2 = cv2.boundingRect(np.float32([t2]))
-
     # Offset points by left top corner of the respective rectangles
     t1Rect = []
     t2Rect = []
@@ -112,7 +111,7 @@ def warpTriangle(img1, img2, t1, t2):
 
     # Get mask by filling triangle
     mask = np.zeros((r2[3], r2[2], 3), dtype=np.float32)
-    cv2.fillConvexPoly(mask, np.int32(t2RectInt), (1.0, 1.0, 1.0), 16, 0);
+    cv2.fillConvexPoly(mask, np.int32(t2RectInt), (1.0, 1.0, 1.0), 16, 0)
 
     # Apply warpImage to small rectangular patches
     img1Rect = img1[r1[1]:r1[1] + r1[3], r1[0]:r1[0] + r1[2]]
@@ -129,6 +128,7 @@ def warpTriangle(img1, img2, t1, t2):
             (1.0, 1.0, 1.0) - mask)
 
     img2[r2[1]:r2[1] + r2[3], r2[0]:r2[0] + r2[2]] = img2[r2[1]:r2[1] + r2[3], r2[0]:r2[0] + r2[2]] + img2Rect
-
+    # img2Rect = cv2.resize(img2Rect, (200, 200))
+    # cv2.imshow("123", img2Rect)
     # return img2
 
