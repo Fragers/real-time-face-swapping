@@ -3,5 +3,5 @@
 
 # Real time face swapping
  delaunay triangulation
-# script in the test.py
+# to using run new_triangulation.py
 # run pip install -r requirements.txt
