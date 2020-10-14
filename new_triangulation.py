@@ -5,6 +5,7 @@ if __name__ == '__main__':
     config = configparser.ConfigParser()
     config.read('settings.ini')
     filename1 = config["Settings"]["filepath"]
+    backname = config["Settings"]["backpath"]
     sizeW = int(config["Settings"]["sizeW"])
     sizeH = int(config["Settings"]["sizeH"])
     cap = cv2.VideoCapture(0)
@@ -28,6 +29,9 @@ if __name__ == '__main__':
     prev_frame = None
     img1 = cv2.imread(filename1)
     img1 = cv2.resize(img1, (sizeW, sizeH))
+    backfile = cv2.imread(backname)
+    backfile = cv2.resize(backfile, (sizeW, sizeH))
+
     preds_source = handler.get(img1, get_all=False)
 
     print(img1.shape)
@@ -37,13 +41,17 @@ if __name__ == '__main__':
         for i in range(pred.shape[0]):
             p = tuple(pred[i])
             points1.append(p)
+    #
+    # hull1 = []
+    # for i in range(len(points1)):
+    #     hull1.append(points1[i])
 
     with pyvirtualcam.Camera(width=sizeW, height=sizeH, fps=30, print_fps=True) as cam:
         while True:
             _, img2 = cap.read()
             # img1Warped = np.copy(img2)
             img1Warped = np.zeros_like(img2)
-            img_copy = img2.copy()
+            # img_copy = img2.copy() #see landmarks
             # Read array of corresponding points
             # points1 = readPoints(filename1 + '.txt')
             # points2 = readPoints(filename2 + '.txt')
@@ -58,12 +66,14 @@ if __name__ == '__main__':
                 pred = np.round(pred).astype(np.int)
                 for i in range(pred.shape[0]):
                     p = tuple(pred[i])
-                    cv2.circle(img_copy, tuple(pred[i]), radius=1, color=color)
+                    # cv2.circle(img_copy, tuple(pred[i]), radius=1, color=color)
                     # print(pred[i])
                     points2.append(p)
+
             # Find convex hull
             hull1 = []
             hull2 = []
+
             try:
                 convHullIndex = cv2.convexHull(np.array(points2), returnPoints=False)
                 hullIndex = [i for i in range(len(points2))]
@@ -76,15 +86,26 @@ if __name__ == '__main__':
                     continue
                 else:
                     continue
+            # ненужный цикл
             for i in range(0, len(hullIndex)):
                 hull1.append(points1[int(hullIndex[i])])
                 hull2.append(points2[int(hullIndex[i])])
+
             convexHull = []
+
             for i in range(0, len(convHullIndex)):
                 convexHull.append(points2[int(convHullIndex[i])])
             # print(len(hullIndex))
+
             if len(hullIndex) == 0:
                 continue
+                # if prev_frame is not None:
+                #     cv2.imshow('video', output)
+                #     # tim = cv2.cvtColor(output, cv2.COLOR_RGB2RGBA)
+                #     cam.send(tim)
+                #     continue
+                # else:
+                #     continue
             # Find delanauy traingulation for convex hull points
             sizeImg2 = img2.shape
             rect = (0, 0, sizeImg2[1], sizeImg2[0])
@@ -128,10 +149,45 @@ if __name__ == '__main__':
             # tim = cv2.cvtColor(output, cv2.COLOR_BGR2RGBA)
             #
             #
+
+
+
+
+
+            #
+            hull8U = []
+            for i in range(0, len(convexHull)):
+                hull8U.append((convexHull[i][0], convexHull[i][1]))
+
+            mask = np.zeros(img2.shape, dtype=img2.dtype)
+
+            cv2.fillConvexPoly(mask, np.int32(hull8U), (255, 255, 255))
+
+            r = cv2.boundingRect(np.float32([hull2]))
+
+            nosePoint = points2[53]
+
+            center = (r[0] - nosePoint[0] + sizeW // 2 + int(r[2] / 2), r[1] - nosePoint[1] + sizeH // 2 + int(r[3] / 2))
+            # center = (r[0] + -nosePoint[0] + sizeW // 2, r[1] + -nosePoint[1] + sizeH // 2)
+
+            old_output = np.uint8(img1Warped)
+            T = np.float32([[1, 0, -nosePoint[0] + sizeW // 2], [0, 1, -nosePoint[1] + sizeH // 2]])
+            output = cv2.warpAffine(old_output, T, (sizeW, sizeH))
+            mask = cv2.warpAffine(mask, T, (sizeW, sizeH))
+
+            new_output = cv2.seamlessClone(output, backfile, mask, center, cv2.NORMAL_CLONE)
+            tim = cv2.cvtColor(new_output, cv2.COLOR_BGR2RGBA)
+
+            # centering
             output = np.uint8(img1Warped)
 
-            tim = cv2.cvtColor(output, cv2.COLOR_BGR2RGBA)
-            cv2.imshow('video', output)
+            # tim = cv2.cvtColor(output, cv2.COLOR_BGR2RGBA)
+            # nosePoint = points2[53]
+            # T = np.float32([[1, 0, -nosePoint[0] + sizeW // 2], [0, 1, -nosePoint[1] + sizeH // 2]])
+            # new_output1 = cv2.warpAffine(output, T, (sizeW, sizeH))
+            #
+            # cv2.imshow('video1', new_output1)
+            cv2.imshow('video', new_output)
             # cv2.imshow('video1', img_copy)
 
             prev_frame = True

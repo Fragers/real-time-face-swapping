@@ -124,6 +124,8 @@ def warpTriangle(img1, img2, t1, t2):
     img2Rect = img2Rect * mask
 
     # Copy triangular region of the rectangular patch to the output image
+
+    #comment this part to see triangulation
     img2[r2[1]:r2[1] + r2[3], r2[0]:r2[0] + r2[2]] = img2[r2[1]:r2[1] + r2[3], r2[0]:r2[0] + r2[2]] * (
             (1.0, 1.0, 1.0) - mask)
 
