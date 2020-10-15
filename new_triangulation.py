@@ -1,5 +1,13 @@
 # Read points from text file
 from utils.triangulation_implementation import *
+import math
+
+
+def getLength(point1, point2, pointNose):
+    l1 = math.sqrt(float(point1[0] - pointNose[0]) ** 2 + float(point1[1] - pointNose[1]) ** 2)
+    l2 = math.sqrt(float(point2[0] - pointNose[0]) ** 2 + float(point2[1] - pointNose[1]) ** 2)
+    return (l1 + l2) / 2
+
 
 if __name__ == '__main__':
     config = configparser.ConfigParser()
@@ -19,16 +27,15 @@ if __name__ == '__main__':
     # (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
 
     # Read images
-    # config = configparser.ConfigParser()
-    # config.read('settings.ini')
-    # filename1 = config["Settings"]["filepath"]
-    # sizeW = int(config["Settings"]["sizeW"])
-    # sizeH = int(config["Settings"]["sizeH"])
+
 
     print(filename1)
     prev_frame = None
     img1 = cv2.imread(filename1)
     img1 = cv2.resize(img1, (sizeW, sizeH))
+    img1_1 = img1.copy()
+    img1_1 = cv2.resize(img1_1, (sizeW-20, sizeH-20))
+
     backfile = cv2.imread(backname)
     backfile = cv2.resize(backfile, (sizeW, sizeH))
 
@@ -45,7 +52,8 @@ if __name__ == '__main__':
     # hull1 = []
     # for i in range(len(points1)):
     #     hull1.append(points1[i])
-
+    nose_point1 = points1[80]
+    start_size = getLength(points1[1], points1[17], nose_point1)
     with pyvirtualcam.Camera(width=sizeW, height=sizeH, fps=30, print_fps=True) as cam:
         while True:
             _, img2 = cap.read()
@@ -155,6 +163,9 @@ if __name__ == '__main__':
 
 
             #
+            nosePoint = points2[80]
+            new_size = getLength(points2[1], points2[17], nosePoint) + 20
+            #making mask for
             hull8U = []
             for i in range(0, len(convexHull)):
                 hull8U.append((convexHull[i][0], convexHull[i][1]))
@@ -165,21 +176,31 @@ if __name__ == '__main__':
 
             r = cv2.boundingRect(np.float32([hull2]))
 
-            nosePoint = points2[53]
-
+            # print(start_size, new_size)
             center = (r[0] - nosePoint[0] + sizeW // 2 + int(r[2] / 2), r[1] - nosePoint[1] + sizeH // 2 + int(r[3] / 2))
-            # center = (r[0] + -nosePoint[0] + sizeW // 2, r[1] + -nosePoint[1] + sizeH // 2)
 
             old_output = np.uint8(img1Warped)
             T = np.float32([[1, 0, -nosePoint[0] + sizeW // 2], [0, 1, -nosePoint[1] + sizeH // 2]])
+            M = cv2.getRotationMatrix2D(center, 0, start_size / new_size)
+            M = np.array(M)
+            T = np.array(T)
+            # T.transpose()
+            # M = M * T
+            # print(M)
+            # break
+            # M = M.transpose()
             output = cv2.warpAffine(old_output, T, (sizeW, sizeH))
             mask = cv2.warpAffine(mask, T, (sizeW, sizeH))
+            # print(M)
+            # break
+            output = cv2.warpAffine(output, M, (sizeW, sizeH))
+            mask = cv2.warpAffine(mask, M, (sizeW, sizeH))
 
-            new_output = cv2.seamlessClone(output, backfile, mask, center, cv2.NORMAL_CLONE)
-            tim = cv2.cvtColor(new_output, cv2.COLOR_BGR2RGBA)
+            # new_output = cv2.seamlessClone(output, img1, mask, center, cv2.NORMAL_CLONE)
+            tim = cv2.cvtColor(output, cv2.COLOR_BGR2RGBA)
 
             # centering
-            output = np.uint8(img1Warped)
+            # output = np.uint8(img1Warped)
 
             # tim = cv2.cvtColor(output, cv2.COLOR_BGR2RGBA)
             # nosePoint = points2[53]
@@ -187,7 +208,7 @@ if __name__ == '__main__':
             # new_output1 = cv2.warpAffine(output, T, (sizeW, sizeH))
             #
             # cv2.imshow('video1', new_output1)
-            cv2.imshow('video', new_output)
+            cv2.imshow('video', output)
             # cv2.imshow('video1', img_copy)
 
             prev_frame = True
