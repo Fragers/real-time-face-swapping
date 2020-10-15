@@ -95,6 +95,8 @@ if __name__ == '__main__':
                 else:
                     continue
             # ненужный цикл
+            if len(hullIndex) == 0:
+                continue
             for i in range(0, len(hullIndex)):
                 hull1.append(points1[int(hullIndex[i])])
                 hull2.append(points2[int(hullIndex[i])])
@@ -105,8 +107,7 @@ if __name__ == '__main__':
                 convexHull.append(points2[int(convHullIndex[i])])
             # print(len(hullIndex))
 
-            if len(hullIndex) == 0:
-                continue
+
                 # if prev_frame is not None:
                 #     cv2.imshow('video', output)
                 #     # tim = cv2.cvtColor(output, cv2.COLOR_RGB2RGBA)
