@@ -21,7 +21,7 @@ if __name__ == '__main__':
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, sizeW)  # Ширина кадров в видеопотоке.
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, sizeH)
     handler = Handler('new_model/2d106det', 0, ctx_id=-1,
-                      det_size=120)  # чем меньше размер картинки тем быстрее инференс, но точность ниже, норм при 120..
+                      det_size=224)  # чем меньше размер картинки тем быстрее инференс, но точность ниже, норм при 120..
 
     # Make sure OpenCV is version 3.0 or above
     # (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     #     hull1.append(points1[i])
     nose_point1 = points1[80]
     start_size = getLength(points1[1], points1[17], nose_point1)
-    with pyvirtualcam.Camera(width=sizeW, height=sizeH, fps=30, print_fps=True) as cam:
+    with pyvirtualcam.Camera(width=sizeW, height=sizeH, fps=15, print_fps=True) as cam:
         while True:
             _, img2 = cap.read()
             # img1Warped = np.copy(img2)

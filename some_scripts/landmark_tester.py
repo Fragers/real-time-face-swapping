@@ -13,9 +13,9 @@ from utils.model_implementation import *
 from utils.triangulation_implementation import *
 
 handler = Handler('./../new_model/2d106det', 0, ctx_id=-1,
-                  det_size=120)  # чем меньше размер картинки тем быстрее инференс, но точность ниже, норм при 120..
+                  det_size=224)  # чем меньше размер картинки тем быстрее инференс, но точность ниже, норм при 120..
 
-img1 = cv2.imread('../images/ava.png')
+img1 = cv2.imread('../images/di.png')
 img1 = cv2.resize(img1, (640, 480))
 
 preds_source = handler.get(img1, get_all=False)
