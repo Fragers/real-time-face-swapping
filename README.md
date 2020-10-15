@@ -5,3 +5,4 @@
  delaunay triangulation
 # to using run new_triangulation.py
 # run pip install -r requirements.txt
+# python 3.8.5 
