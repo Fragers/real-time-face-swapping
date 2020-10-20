@@ -19,8 +19,8 @@ if __name__ == '__main__':
     sizeH = int(config["Settings"]["sizeH"])
     cap = cv2.VideoCapture(0)
     cap.set(cv2.CAP_PROP_FPS, 24)  # Частота кадров
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, sizeW)  # Ширина кадров в видеопотоке.
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, sizeH)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, round(sizeW * 1))  # Ширина кадров в видеопотоке.
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, round(sizeH * 1))
     handler = Handler('new_model/2d106det', 0, ctx_id=-1,
                       det_size=224)  # чем меньше размер картинки тем быстрее инференс, но точность ниже, норм при 120..
 
@@ -58,6 +58,7 @@ if __name__ == '__main__':
     with pyvirtualcam.Camera(width=sizeW, height=sizeH, fps=15, print_fps=True) as cam:
         while True:
             _, img2 = cap.read()
+            img_copy = img2.copy()
             # img1Warped = np.copy(img2)
             img1Warped = np.zeros_like(img2)
             # img_copy = img2.copy() #see landmarks
@@ -97,7 +98,7 @@ if __name__ == '__main__':
                 else:
                     continue
             # ненужный цикл
-            if len(hullIndex) == 0:
+            if len(hullIndex) != 106:
                 continue
             for i in range(0, len(hullIndex)):
                 hull1.append(points1[int(hullIndex[i])])
@@ -118,14 +119,18 @@ if __name__ == '__main__':
             #     continue
             # Find delanauy traingulation for convex hull points
             sizeImg2 = img2.shape
-            rect = (0, 0, sizeImg2[1], sizeImg2[0])
+            print(sizeImg2)
+            rect = (0, 0, sizeW, sizeH)
             points_dict = dict()
+            mxx = 0
+            mxy = 0
             for index, curPoint in enumerate(points2):
                 # print(curPoint)
                 points_dict[curPoint] = index
-
-            dt = calculateDelaunayTriangles(rect, hull2, points_dict)
-
+            try:
+                dt = calculateDelaunayTriangles(rect, hull2, points_dict)
+            except:
+                continue
             if len(dt) == 0:
                 quit()
 
@@ -149,9 +154,9 @@ if __name__ == '__main__':
             for i in range(0, len(convexHull)):
                 hull8U.append((convexHull[i][0], convexHull[i][1]))
 
-            # mask = np.zeros(img2.shape, dtype=img2.dtype)
+            mask = np.zeros(img2.shape, dtype=img2.dtype)
 
-            # cv2.fillConvexPoly(mask, np.int32(hull8U), (255, 255, 255))
+            cv2.fillConvexPoly(mask, np.int32(hull8U), (255, 255, 255))
 
             r = cv2.boundingRect(np.float32([hull2]))
 
@@ -161,19 +166,19 @@ if __name__ == '__main__':
 
             old_output = np.uint8(img1Warped)
 
-            T = np.float32([[1, 0, -nosePoint[0] + sizeW // 2], [0, 1, -nosePoint[1] + sizeH // 2]])
-            M = cv2.getRotationMatrix2D(center, 0, start_size / new_size)
+            T = np.float32([[1, 0, -nosePoint[0] + sizeW // 2], [0, 1, -nosePoint[1] + sizeH // 2]]) #centering
+            M = cv2.getRotationMatrix2D(center, 0, start_size / new_size) #scaling
             M = np.array(M)
             T = np.array(T)
 
             output = cv2.warpAffine(old_output, T, (sizeW, sizeH))
             output = cv2.warpAffine(output, M, (sizeW, sizeH))
 
-            # mask = cv2.warpAffine(mask, T, (sizeW, sizeH))
-            # mask = cv2.warpAffine(mask, M, (sizeW, sizeH))
+            mask = cv2.warpAffine(mask, T, (sizeW, sizeH))
+            mask = cv2.warpAffine(mask, M, (sizeW, sizeH))
 
-            # new_output = cv2.seamlessClone(output, img1, mask, center, cv2.NORMAL_CLONE)
-            tim = cv2.cvtColor(output, cv2.COLOR_BGR2RGBA)
+            new_output = cv2.seamlessClone(output, backfile, mask, center, cv2.NORMAL_CLONE)
+            tim = cv2.cvtColor(new_output, cv2.COLOR_BGR2RGBA)
 
             # centering
             # output = np.uint8(img1Warped)
@@ -196,7 +201,9 @@ if __name__ == '__main__':
             #             color, thickness, cv2.LINE_AA)
 
             start_time = time.time()
-            cv2.imshow('video', output)
+            cv2.imshow('video', new_output)
+            cv2.imshow('video1', img_copy)
+
             # cv2.imshow('video1', img_copy)
 
             prev_frame = True
