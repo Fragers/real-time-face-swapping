@@ -24,6 +24,7 @@ if __name__ == '__main__':
     handler = Handler('new_model/2d106det', 0, ctx_id=-1,
                       det_size=224)  # чем меньше размер картинки тем быстрее инференс, но точность ниже, норм при 120..
 
+
     # Make sure OpenCV is version 3.0 or above
     # (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
 
@@ -38,16 +39,18 @@ if __name__ == '__main__':
 
     backfile = cv2.imread(backname)
     backfile = cv2.resize(backfile, (sizeW, sizeH))
+    if config["Settings"]["landmarks_type"] == "from_the_file":
+        points1 = readPoints(config["Settings"]["landmarks_source"])
+    else:
+        preds_source = handler.get(img1, get_all=False)
 
-    preds_source = handler.get(img1, get_all=False)
-
-    print(img1.shape)
-    points1 = []
-    for pred in preds_source:
-        pred = np.round(pred).astype(np.int)
-        for i in range(pred.shape[0]):
-            p = tuple(pred[i])
-            points1.append(p)
+        # print(img1.shape)
+        points1 = []
+        for pred in preds_source:
+            pred = np.round(pred).astype(np.int)
+            for i in range(pred.shape[0]):
+                p = tuple(pred[i])
+                points1.append(p)
     #
     # hull1 = []
     # for i in range(len(points1)):
@@ -88,7 +91,6 @@ if __name__ == '__main__':
             try:
                 convHullIndex = cv2.convexHull(np.array(points2), returnPoints=False)
                 hullIndex = [i for i in range(len(points2))]
-
             except:
                 if prev_frame is not None:
                     cv2.imshow('video', output)
@@ -118,8 +120,9 @@ if __name__ == '__main__':
             # else:
             #     continue
             # Find delanauy traingulation for convex hull points
+
             sizeImg2 = img2.shape
-            print(sizeImg2)
+            # print(sizeImg2)
             rect = (0, 0, sizeW, sizeH)
             points_dict = dict()
             mxx = 0
@@ -202,7 +205,7 @@ if __name__ == '__main__':
 
             start_time = time.time()
             cv2.imshow('video', new_output)
-            cv2.imshow('video1', img_copy)
+            # cv2.imshow('video1', img_copy)
 
             # cv2.imshow('video1', img_copy)
 
@@ -211,7 +214,7 @@ if __name__ == '__main__':
             # output = tim
             cam.send(tim)
             cv2.waitKey(1)
-            cam.sleep_until_next_frame()
+            # cam.sleep_until_next_frame()
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break

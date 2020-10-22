@@ -11,11 +11,11 @@ import insightface
 import configparser
 from utils.model_implementation import *
 from utils.triangulation_implementation import *
-
+import json
 handler = Handler('./../new_model/2d106det', 0, ctx_id=-1,
                   det_size=224)  # чем меньше размер картинки тем быстрее инференс, но точность ниже, норм при 120..
 
-img1 = cv2.imread('../images/test_1.png')
+img1 = cv2.imread('../images/rea_best.png')
 # img1 = cv2.resize(img1, (640, 480))
 
 preds_source = handler.get(img1, get_all=False)
@@ -53,5 +53,7 @@ print(mxX, mxY)
 cv2.imshow('123', img1)
 cv2.imwrite('points2.png', img1)
 cv2.waitKey(1)
+with open('start_points.json', 'w') as f:
+    json.dump(pred.tolist(), f, indent=4)
 if cv2.waitKey(1) & 0xFF == ord('q'):
     pass

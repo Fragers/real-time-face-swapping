@@ -1,19 +1,19 @@
 from utils.model_implementation import *
 
 import cv2
-
+import json
 
 def readPoints(path):
     # Create an array of points.
-    points = []
+    new_points = []
 
     # Read points
-    with open(path) as file:
-        for line in file:
-            x, y = line.split()
-            points.append((int(x), int(y)))
+    with open(path, 'r') as f:
+        points = json.load(f)
+    for point in points:
+        new_points.append(tuple(point))
 
-    return points
+    return new_points
 
 
 # Apply affine transform calculated using srcTri and dstTri to src and
