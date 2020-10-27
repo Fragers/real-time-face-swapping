@@ -151,6 +151,7 @@ if __name__ == '__main__':
                 warpTriangle(img1, img1Warped, t1, t2)
 
             nosePoint = points2[80]
+            leftPoint = points2[1]
             new_size = getLength(points2[1], points2[17], nosePoint) + 20
             # making mask for
             hull8U = []
@@ -164,16 +165,21 @@ if __name__ == '__main__':
             r = cv2.boundingRect(np.float32([hull2]))
 
             # print(start_size, new_size)
+            # center = (
+            #     r[0] - nosePoint[0] + sizeW // 2 + int(r[2] / 2), r[1] - nosePoint[1] + sizeH // 2 + int(r[3] / 2))
             center = (
-                r[0] - nosePoint[0] + sizeW // 2 + int(r[2] / 2), r[1] - nosePoint[1] + sizeH // 2 + int(r[3] / 2))
+                r[0] - leftPoint[0] + int(sizeW // 2.4) + int(r[2] / 2), r[1] - leftPoint[1] + int(sizeH // 2.2) + int(r[3] / 2))
 
             old_output = np.uint8(img1Warped)
 
+            yAngle = (points2[17][1] - points2[1][1])
+            xAngle = (points2[17][0] - points2[1][0])
+            atanAngle = math.atan2(yAngle, xAngle)
             T = np.float32([[1, 0, -nosePoint[0] + sizeW // 2], [0, 1, -nosePoint[1] + sizeH // 2]]) #centering
-            M = cv2.getRotationMatrix2D(center, 0, start_size / new_size) #scaling
+            M = cv2.getRotationMatrix2D(center, atanAngle * 180 / 3.1415926535, start_size / new_size) #scaling
             M = np.array(M)
             T = np.array(T)
-
+            # output = old_output
             output = cv2.warpAffine(old_output, T, (sizeW, sizeH))
             output = cv2.warpAffine(output, M, (sizeW, sizeH))
 
