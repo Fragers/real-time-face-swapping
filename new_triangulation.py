@@ -24,7 +24,6 @@ if __name__ == '__main__':
     handler = Handler('new_model/2d106det', 0, ctx_id=-1,
                       det_size=224)  # чем меньше размер картинки тем быстрее инференс, но точность ниже, норм при 120..
 
-
     # Make sure OpenCV is version 3.0 or above
     # (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
 
@@ -168,15 +167,16 @@ if __name__ == '__main__':
             # center = (
             #     r[0] - nosePoint[0] + sizeW // 2 + int(r[2] / 2), r[1] - nosePoint[1] + sizeH // 2 + int(r[3] / 2))
             center = (
-                r[0] - leftPoint[0] + int(sizeW // 2.4) + int(r[2] / 2), r[1] - leftPoint[1] + int(sizeH // 2.2) + int(r[3] / 2))
+                r[0] - leftPoint[0] + int(sizeW // 2.3) + int(r[2] / 2),
+                r[1] - leftPoint[1] + int(sizeH // 2.2) + int(r[3] / 2))
 
             old_output = np.uint8(img1Warped)
 
             yAngle = (points2[17][1] - points2[1][1])
             xAngle = (points2[17][0] - points2[1][0])
             atanAngle = math.atan2(yAngle, xAngle)
-            T = np.float32([[1, 0, -nosePoint[0] + sizeW // 2], [0, 1, -nosePoint[1] + sizeH // 2]]) #centering
-            M = cv2.getRotationMatrix2D(center, atanAngle * 180 / 3.1415926535, start_size / new_size) #scaling
+            T = np.float32([[1, 0, -nosePoint[0] + sizeW // 2], [0, 1, -nosePoint[1] + sizeH // 2]])  # centering
+            M = cv2.getRotationMatrix2D(center, atanAngle * 180 / 3.1415926535, start_size / new_size)  # scaling
             M = np.array(M)
             T = np.array(T)
             # output = old_output

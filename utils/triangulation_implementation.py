@@ -23,7 +23,7 @@ def applyAffineTransform(src, srcTri, dstTri, size):
     warpMat = cv2.getAffineTransform(np.float32(srcTri), np.float32(dstTri))
 
     # Apply the Affine Transform just found to the src image
-    dst = cv2.warpAffine(src, warpMat, (size[0], size[1]), None, flags=cv2.INTER_LINEAR,
+    dst = cv2.warpAffine(src, warpMat, (size[0], size[1]), None, flags=cv2.INTER_CUBIC,
                          borderMode=cv2.BORDER_REFLECT_101)
     # dst = cv2.warpAffine(src, warpMat, (size[0], size[1]), None, flags=None, borderMode=None)
     return dst

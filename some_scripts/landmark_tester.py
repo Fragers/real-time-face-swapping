@@ -52,7 +52,7 @@ for pred in preds_source:
 print(mxX, mxY)
 cv2.imshow('123', img1)
 cv2.imwrite('points2.png', img1)
-cv2.waitKey(1)
+cv2.waitKey(0)
 with open('start_points.json', 'w') as f:
     json.dump(pred.tolist(), f, indent=4)
 if cv2.waitKey(1) & 0xFF == ord('q'):
