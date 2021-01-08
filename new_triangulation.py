@@ -21,8 +21,7 @@ if __name__ == '__main__':
     cap.set(cv2.CAP_PROP_FPS, 24)  # Частота кадров
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, round(sizeW * 1))  # Ширина кадров в видеопотоке.
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, round(sizeH * 1))
-    handler = Handler('new_model/2d106det', 0, ctx_id=-1,
-                      det_size=224)  # чем меньше размер картинки тем быстрее инференс, но точность ниже, норм при 120..
+    handler = Handler('new_model/2d106det', 0, ctx_id=-1, det_size=224)  # чем меньше размер картинки тем быстрее инференс, но точность ниже, норм при 120..
 
     # Make sure OpenCV is version 3.0 or above
     # (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
@@ -167,7 +166,7 @@ if __name__ == '__main__':
             # center = (
             #     r[0] - nosePoint[0] + sizeW // 2 + int(r[2] / 2), r[1] - nosePoint[1] + sizeH // 2 + int(r[3] / 2))
             center = (
-                r[0] - leftPoint[0] + int(sizeW // 2.3) + int(r[2] / 2),
+                r[0] - leftPoint[0] + int(sizeW // 2.5) + int(r[2] / 2),
                 r[1] - leftPoint[1] + int(sizeH // 2.2) + int(r[3] / 2))
 
             old_output = np.uint8(img1Warped)
